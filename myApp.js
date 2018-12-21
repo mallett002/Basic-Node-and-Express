@@ -10,6 +10,9 @@ var app = express();
 /** 1) Meet the node console. */
 
 /** 2) Start a working Express Server------------------------------------*/
+// If you had a website at “example.com/” and wanted to serve a string
+// such as “Hello World” to whoever visits the root domain you could do
+// so easily using node and/or express:
 app.get("/", (req, res) => {
   res.send("Hello Express!");
 });
@@ -39,7 +42,19 @@ app.get("/json", (req, res) => {
   res.json({ message: "Hello json" });
 });
 
-/** 6) Use the .env file to configure the app */
+/** 6) Use the .env file to configure the app -----------------------------*/
+// Used to pass environment variables to your app
+// process.env = global Node object
+// variable accessible through process.env.VAR_NAME
+
+// Adding an env variable as config option:
+app.get("/json", (req, res) => {
+  if (process.env.MESSAGE_STYLE === "uppercase") {
+    return res.json({ message: "HELLO JSON" });
+  } else {
+    return res.json({ message: "Hello Json" });
+  }
+});
 
 /** 7) Root-level Middleware - A logger */
 //  place it before all the routes !
@@ -56,9 +71,8 @@ app.get("/json", (req, res) => {
 
 /** 12) Get data form POST  */
 
-// This would be part of the basic setup of an Express app
-// but to allow FCC to run tests, the server is already active
-/** app.listen(process.env.PORT || 3000 ); */
+// Tell the express app on which port to listen:
+app.listen(process.env.PORT || 3000);
 
 //---------- DO NOT EDIT BELOW THIS LINE --------------------
 
