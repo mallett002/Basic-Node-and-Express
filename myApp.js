@@ -1,13 +1,18 @@
 var express = require("express");
 var app = express();
+var bodyParser = require("body-parser");
 
 // app.METHOD(PATH, HANDLER);
 
 // --> 7)  Mount the Logger middleware here
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - ${req.ip}`);
+  // call next to end the response cycle
+  next();
+});
 
 // --> 11)  Mount the body-parser middleware  here
-
-/** 1) Meet the node console. */
+app.use(bodyParser.urlencoded({ extended: false }));
 
 /** 2) Start a working Express Server------------------------------------*/
 // If you had a website at “example.com/” and wanted to serve a string
@@ -56,20 +61,69 @@ app.get("/json", (req, res) => {
   }
 });
 
-/** 7) Root-level Middleware - A logger */
-//  place it before all the routes !
+/** 7) Root-level Middleware - A logger ------------------------------------*/
+// If only want to run middleware for posts use:
+// app.post(middlewareFunction)
+// app.get(middlewareFunction) for get etc...
+// next() ends the cycle, if you don't call res.send
 
-/** 8) Chaining middleware. A Time server */
+// mount a root level middeware, and log info about response
+// Is mounted above (#7)
 
-/** 9)  Get input from client - Route parameters */
+/** 8) Chaining middleware. A Time server -----------------------------------*/
+// Mount a middleware at a specific route: app.METHOD(path, middlewareFunction)
+app.get(
+  "/now",
+  (req, res, next) => {
+    req.time = new Date().toString();
+    next();
+  },
+  (req, res) => {
+    res.send({ time: req.time });
+  }
+);
 
-/** 10) Get input from client - Query parameters */
+/** 9)  Get input from client - Route parameters ------------------------------------*/
+// Route param /:word will be in req.params object with key "word"
+
+// echo server mounted at "/:word/echo"
+app.get("/:word/echo", (req, res) => {
+  res.json({ echo: req.params.word });
+});
+
+/** 10) Get input from client - Query parameters -------------------------------------*/
 // /name?first=<firstname>&last=<lastname>
+// query params in req.query object
 
-/** 11) Get ready for POST Requests - the `body-parser` */
-// place it before all the routes !
+// api endpoint mounted at '/name'
+// app.route(path).get(handler).post(handler) to chain diff handlers on same path route
+app
+  .route("/name")
+  .get((req, res) => {
+    const first = req.query.first;
+    const last = req.query.last;
+    res.send({ name: `${first} ${last}` });
+  })
+  .post((req, res) => {
+    const first = req.query.first;
+    const last = req.query.last;
+    res.send({ name: `${first} ${last}` });
+  });
 
-/** 12) Get data form POST  */
+/** 11) Get ready for POST Requests - the `body-parser` --------------------------------*/
+// Place the bodyParser code before all the paths it will be used on!
+// bodyParser placed above (#11)
+
+/** 12) Mount a POST handler -----------------------------------------------------------*/
+// First, mount a bodyParser
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Mount the Post handler
+app.post("/name", (req, res) => {
+  const first = req.body.query.first;
+  const last = req.body.query.last;
+  res.json({ name: `${first} ${last}` });
+});
 
 // Tell the express app on which port to listen:
 app.listen(process.env.PORT || 3000);
